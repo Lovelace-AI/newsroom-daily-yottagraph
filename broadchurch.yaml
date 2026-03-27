@@ -1,0 +1,27 @@
+# Broadchurch project configuration
+# Auto-generated during tenant provisioning.
+
+gcp:
+  project: broadchurch
+  region: us-central1
+  staging_bucket: broadchurch-agent-staging
+
+tenant:
+  project_name: "newsroom-daily"
+  display_name: "Newsroom Daily"
+  org_id: "org_JFhYowf8AL3v4Eq9"
+  service_account: "tenant-jfhyowf8al3v4eq9@broadchurch.iam.gserviceaccount.com"
+
+gateway:
+  url: "https://broadchurch-portal-194773164895.us-central1.run.app"
+  qs_api_key: "24ad690cc8ba211bbce493458ec089046ddeebb2fe113d82dab2a29839ebe37d"
+
+query_server:
+  url: "https://query.news.prod.g.lovelace.ai"
+  audience: "queryserver:api"
+
+auth:
+  client_id: "BMrzlVe3HdTJI6vaB36O0mqhUVj0tWd2"
+  audience: "queryserver:api"
+
+agents: {}
