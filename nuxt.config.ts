@@ -145,8 +145,10 @@ export default defineNuxtConfig({
     // NUXT_PUBLIC_[KEY_NAME] for public config (e.g., NUXT_PUBLIC_APP_ID overrides appId)
     // See: https://nuxt.com/docs/guide/going-further/runtime-config
     runtimeConfig: {
+        // Server-only config (not exposed to client)
+        qsApiKey: bcYaml.qsApiKey,
+
         public: {
-            qsApiKey: bcYaml.qsApiKey,
             // App Identity — broadchurch.yaml provides defaults for provisioned projects
             appId: bcYaml.appId,
             appName: bcYaml.appName,

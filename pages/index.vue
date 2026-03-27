@@ -1,83 +1,85 @@
 <template>
-    <div class="home-page">
-        <div class="home-content">
-            <div class="hero-section">
-                <img src="/LL-logo-full-wht.svg" alt="Lovelace" class="hero-logo" />
-                <h1 class="hero-title">{{ appName || 'Welcome to Aether' }}</h1>
-                <p class="hero-subtitle">Your AI-powered workspace is ready.</p>
-            </div>
+    <div class="dashboard-page">
+        <div class="dashboard-header">
+            <h1 class="page-title">Newsroom Daily</h1>
+            <p class="page-subtitle">Latest news from the Lovelace Knowledge Graph</p>
+        </div>
 
-            <div class="getting-started">
-                <h2 class="section-title">Getting Started</h2>
-                <div class="steps-grid">
-                    <div class="step-item">
-                        <span class="step-number">1</span>
-                        <div>
-                            <div class="step-title">Describe what you want</div>
-                            <div class="step-desc">
-                                Edit <code>DESIGN.md</code> with your project vision. The AI agent
-                                reads this first to understand what to build.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <span class="step-number">2</span>
-                        <div>
-                            <div class="step-title">Build it</div>
-                            <div class="step-desc">
-                                Run <code>/build_my_app</code> in Cursor. The agent will design and
-                                implement your app based on the brief.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <span class="step-number">3</span>
-                        <div>
-                            <div class="step-title">Deploy</div>
-                            <div class="step-desc">
-                                Push to main to auto-deploy on Vercel. Use
-                                <code>/deploy_agent</code> or <code>/deploy_mcp</code> for backend
-                                services.
-                            </div>
-                        </div>
-                    </div>
+        <div class="search-section">
+            <EntitySearch />
+        </div>
+
+        <div class="dashboard-content">
+            <div class="main-feed">
+                <div class="feed-header">
+                    <h2 class="section-title">Latest Stories</h2>
+                    <v-btn
+                        v-if="!loading"
+                        size="small"
+                        variant="text"
+                        prepend-icon="mdi-refresh"
+                        @click="refresh"
+                    >
+                        Refresh
+                    </v-btn>
+                </div>
+
+                <div v-if="loading" class="loading-container">
+                    <v-progress-circular indeterminate color="primary" size="48" />
+                    <p class="loading-text">Loading articles...</p>
+                </div>
+
+                <div v-else-if="error" class="error-container">
+                    <v-icon icon="mdi-alert-circle" size="48" color="error" />
+                    <p class="error-text">Failed to load articles</p>
+                    <v-btn variant="text" @click="refresh">Try Again</v-btn>
+                </div>
+
+                <div v-else-if="articles.length === 0" class="empty-container">
+                    <v-icon icon="mdi-newspaper-variant-outline" size="48" color="grey" />
+                    <p class="empty-text">No articles found</p>
+                </div>
+
+                <div v-else class="articles-grid">
+                    <ArticleCard
+                        v-for="article in articles"
+                        :key="article.neid"
+                        :article="article"
+                    />
                 </div>
             </div>
+
+            <aside class="sidebar">
+                <TrendingEntities />
+            </aside>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    const { appName } = useAppInfo();
+    const { articles, loading, error, loadRecentArticles } = useArticles();
+
+    onMounted(async () => {
+        await refresh();
+    });
+
+    async function refresh() {
+        await loadRecentArticles(20);
+    }
 </script>
 
 <style scoped>
-    .home-page {
+    .dashboard-page {
         height: 100%;
         overflow-y: auto;
-        display: flex;
-        justify-content: center;
-        padding: 48px 24px;
+        padding: 24px;
     }
 
-    .home-content {
-        max-width: 720px;
-        width: 100%;
-    }
-
-    .hero-section {
-        text-align: center;
-        margin-bottom: 48px;
-    }
-
-    .hero-logo {
-        height: 2rem;
-        width: auto;
+    .dashboard-header {
         margin-bottom: 24px;
-        opacity: 0.6;
     }
 
-    .hero-title {
+    .page-title {
         font-family: var(--font-headline);
         font-weight: 400;
         font-size: 2rem;
@@ -85,66 +87,79 @@
         margin-bottom: 8px;
     }
 
-    .hero-subtitle {
+    .page-subtitle {
         color: var(--lv-silver);
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 
-    .getting-started {
-        margin-bottom: 48px;
+    .search-section {
+        margin-bottom: 32px;
+        max-width: 600px;
+    }
+
+    .dashboard-content {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+        .dashboard-content {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            order: -1;
+        }
+    }
+
+    .main-feed {
+        min-width: 0;
+    }
+
+    .feed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
     }
 
     .section-title {
         font-family: var(--font-headline);
         font-weight: 400;
-        font-size: 1.1rem;
+        font-size: 1.25rem;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         color: var(--lv-silver);
-        margin-bottom: 20px;
     }
 
-    .steps-grid {
+    .articles-grid {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
     }
 
-    .step-item {
+    .loading-container,
+    .error-container,
+    .empty-container {
         display: flex;
-        gap: 16px;
-        align-items: flex-start;
-    }
-
-    .step-number {
-        flex-shrink: 0;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: var(--lv-surface);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        color: var(--lv-green);
-        margin-top: 2px;
+        padding: 64px 24px;
+        gap: 16px;
     }
 
-    .step-title {
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .step-desc {
+    .loading-text,
+    .error-text,
+    .empty-text {
         color: var(--lv-silver);
-        font-size: 0.875rem;
-        line-height: 1.4;
+        font-size: 1rem;
     }
 
-    .step-desc code {
-        font-size: 0.85em;
-        padding: 1px 5px;
+    .sidebar {
+        position: sticky;
+        top: 24px;
+        height: fit-content;
     }
 </style>
